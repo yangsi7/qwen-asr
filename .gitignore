@@ -1,11 +1,27 @@
+# Upstream artifacts
 *.o
 qwen_asr
 venv/
 venv312/
-qwen3-asr-0.6b/
-qwen3-asr-1.7b/
 __pycache__/
-.DS_Store
 samples/extra
 Qwen3-ASR
 TODO.md
+
+# Models (1.9GB+)
+qwen3-asr-0.6b/
+qwen3-asr-1.7b/
+
+# OS
+.DS_Store
+
+# Claude Code local state
+.claude/projects/
+.claude/plans/
+
+# MCP config (contains API keys)
+.mcp.json
+
+# Temp audio
+*.wav
+*.env
