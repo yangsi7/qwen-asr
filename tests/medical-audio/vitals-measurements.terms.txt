@@ -1,0 +1,13 @@
+blood pressure
+heart rate
+oxygen saturation
+body mass index
+milligrams
+twice daily
+blood glucose
+respiratory rate
+temperature
+cholesterol
+hemoglobin
+creatinine
+thyroid stimulating hormone

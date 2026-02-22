@@ -1,0 +1,12 @@
+major depressive disorder
+generalized anxiety disorder
+post-traumatic stress disorder
+bipolar disorder
+schizophrenia
+obsessive compulsive disorder
+attention deficit hyperactivity disorder
+borderline personality disorder
+panic disorder
+social anxiety disorder
+persistent depressive disorder
+schizoaffective disorder

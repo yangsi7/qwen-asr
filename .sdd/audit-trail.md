@@ -69,3 +69,41 @@ Phase 6 (`/tasks`) to generate task breakdown from plan.md
 ### Test Results
 - 20/20 unit tests passing (0.30s)
 - All error codes covered: 200, 400, 413, 429, 500, 503
+
+## 2026-02-22: Phase 5 Planning — 003-medical-feasibility-testing
+
+### Artifacts Created
+- `specs/003-medical-feasibility-testing/plan.md` — 17 tasks across 4 user stories + cross-cutting
+- `specs/003-medical-feasibility-testing/research.md` — macOS TTS pipeline, grep-based accuracy, /usr/bin/time latency
+
+### Key Decisions
+- **TTS voice**: macOS `say -v Samantha` (en_US, natural, no quoting issues)
+- **Audio format**: say → AIFF → ffmpeg -ar 16000 -ac 1 → WAV (proper format for binary -i flag)
+- **Accuracy matching**: Case-insensitive `grep -iqF` (fixed-string substring match)
+- **No synonym engine**: If model says "mg" instead of "milligrams", it counts as MISS
+- **Memory measurement**: `/usr/bin/time -l` on macOS (BSD time binary)
+- **Latency defaults**: 1min + 5min only; 15min/30min via `--full` flag
+
+## 2026-02-22: Phase 6-7 Tasks + Audit — 003-medical-feasibility-testing
+
+- `specs/003-medical-feasibility-testing/tasks.md` — 17 tasks with AC mapping, dependency graph
+- `specs/003-medical-feasibility-testing/audit-report.md` — PASS (7/7 constitution, 100% FR coverage, 0 blockers)
+- GATE 3: PASS
+
+## 2026-02-22: Phase 8 Implementation — 003-medical-feasibility-testing
+
+### Files Created
+- `tests/medical-audio/*.text` (x5) — TTS input prose per category
+- `tests/medical-audio/*.terms.txt` (x5) — Target medical terms (61 total)
+- `tests/medical-audio/*.expected.txt` (x5) — Ground truth transcriptions
+- `scripts/generate-medical-test-audio.sh` — TTS → WAV generation pipeline
+- `tests/test-medical-accuracy.sh` — Accuracy runner with --report flag for feasibility report
+- `tests/test-medical-latency.sh` — Latency benchmark with --full flag for long durations
+
+### Test Corpus
+5 categories, 61 target terms:
+- psychiatric-medications (13): sertraline, fluoxetine, quetiapine, etc.
+- diagnoses (12): major depressive disorder, PTSD, bipolar disorder, etc.
+- anatomical-terms (11): prefrontal cortex, hippocampus, amygdala, etc.
+- vitals-measurements (13): blood pressure, heart rate, oxygen saturation, etc.
+- clinical-phrases (12): patient presents with, treatment plan, risk assessment, etc.

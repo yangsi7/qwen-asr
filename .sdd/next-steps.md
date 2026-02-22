@@ -11,12 +11,16 @@
 - **Action**: Run `bash tests/test-api.sh` for integration test, then merge/tag
 
 ## Feature 003: Medical Feasibility Testing
-- **Status**: Specified (GATE 1 PASS)
-- **Next**: Phase 5 — `/plan` to create `specs/003-medical-feasibility-testing/plan.md`
-- **Action**: Run `/plan specs/003-medical-feasibility-testing/spec.md`
+- **Status**: Implemented (GATE 3 PASS)
+- **Next**: Phase 9 — run tests with real binary, generate feasibility report
+- **Action**:
+  1. `bash scripts/generate-medical-test-audio.sh` — generate WAV test files
+  2. `bash tests/test-medical-accuracy.sh --report` — run accuracy test + generate report
+  3. `bash tests/test-medical-latency.sh` — run latency benchmark
+  4. Review `docs/feasibility/002-medical-terminology-test.md` for go/no-go
 
 ## Recommended Execution Order
 
 1. **002 (Local API)** — Provides the HTTP interface other tools depend on
-2. **003 (Medical Testing)** — Can use either CLI or API for testing
+2. **003 (Medical Testing)** — Run feasibility tests with real binary
 3. **001 (Core)** — Already done; revisit only if enhancements needed
