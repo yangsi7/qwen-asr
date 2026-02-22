@@ -2,25 +2,25 @@
 
 ## Feature 001: Core Transcription Pipeline
 - **Status**: Implementation complete (pre-existing)
-- **Next**: No further SDD phases needed. Spec documents existing, working functionality.
-- **Action**: Mark as complete, or proceed to Phase 5 (`/plan`) only if enhancements are planned.
+- **Phase**: Done (no further SDD phases needed)
+- **Action**: Spec documents existing, working functionality. Revisit only if enhancements planned.
 
 ## Feature 002: Local API Service
-- **Status**: Implemented (20/20 tests passing, GATE 3 PASS)
-- **Next**: Phase 9 — finalize (integration test with real binary, then done)
-- **Action**: Run `bash tests/test-api.sh` for integration test, then merge/tag
+- **Status**: Phase 9 Complete — PASS
+- **Phase**: Done
+- **Results**: 20/20 unit tests, 5/5 integration tests
+- **Fixes**: Python 3.9 compat (Optional[], bool cast)
+- **Action**: Ready for use. Start server with `bash scripts/start-api.sh`.
 
 ## Feature 003: Medical Feasibility Testing
-- **Status**: Implemented (GATE 3 PASS)
-- **Next**: Phase 9 — run tests with real binary, generate feasibility report
-- **Action**:
-  1. `bash scripts/generate-medical-test-audio.sh` — generate WAV test files
-  2. `bash tests/test-medical-accuracy.sh --report` — run accuracy test + generate report
-  3. `bash tests/test-medical-latency.sh` — run latency benchmark
-  4. Review `docs/feasibility/002-medical-terminology-test.md` for go/no-go
+- **Status**: Phase 9 Complete — QUALIFIED GO
+- **Phase**: Done
+- **Results**: Accuracy 57/61 (93%), Latency 1min PASS (3.55x), 5min FAIL (0.72x), Memory PASS (2.9GB)
+- **Action**: Model viable for segments up to ~1-2 min. Use `-S 60` for longer recordings. Report at `docs/feasibility/002-medical-terminology-test.md`.
 
-## Recommended Execution Order
+## All Features Complete
 
-1. **002 (Local API)** — Provides the HTTP interface other tools depend on
-2. **003 (Medical Testing)** — Run feasibility tests with real binary
-3. **001 (Core)** — Already done; revisit only if enhancements needed
+No pending SDD phases remain. Potential next features:
+- Streaming API endpoint (WebSocket for real-time transcription)
+- Diarization integration (speaker identification)
+- Larger model (1.7B) benchmarking

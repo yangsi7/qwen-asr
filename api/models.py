@@ -1,12 +1,14 @@
 """Pydantic response models for the API."""
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class TranscriptionResponse(BaseModel):
     text: str
-    duration_seconds: float | None = None
-    processing_time_ms: float | None = None
+    duration_seconds: Optional[float] = None
+    processing_time_ms: Optional[float] = None
 
 
 class HealthResponse(BaseModel):

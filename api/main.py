@@ -6,6 +6,7 @@ import tempfile
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
@@ -16,14 +17,14 @@ from api.transcribe import TranscriptionError, run_transcription
 
 # --- State ---
 _start_time: float = 0.0
-_semaphore: asyncio.Semaphore | None = None
+_semaphore: Optional[asyncio.Semaphore] = None
 _queue_depth: int = 0
 
 ALLOWED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".flac", ".ogg", ".webm"}
 
 
 def _check_binary() -> bool:
-    return config.BINARY_PATH.exists() and config.BINARY_PATH.stat().st_mode & 0o111
+    return config.BINARY_PATH.exists() and bool(config.BINARY_PATH.stat().st_mode & 0o111)
 
 def _check_model() -> bool:
     return config.MODEL_DIR.is_dir() and (config.MODEL_DIR / "model.safetensors").exists()
@@ -112,7 +113,7 @@ async def transcribe(file: UploadFile):
         )
 
     _queue_depth += 1
-    temp_path: Path | None = None
+    temp_path: Optional[Path] = None
 
     try:
         # Save upload to temp file

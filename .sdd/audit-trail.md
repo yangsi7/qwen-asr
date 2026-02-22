@@ -107,3 +107,40 @@ Phase 6 (`/tasks`) to generate task breakdown from plan.md
 - anatomical-terms (11): prefrontal cortex, hippocampus, amygdala, etc.
 - vitals-measurements (13): blood pressure, heart rate, oxygen saturation, etc.
 - clinical-phrases (12): patient presents with, treatment plan, risk assessment, etc.
+
+## 2026-02-22: Phase 9 — 003-medical-feasibility-testing
+
+### Code Review Fixes Applied
+- Fixed test-design bug: `post-traumatic` → `post traumatic` in diagnoses.terms.txt (hyphen guaranteed false MISS)
+- Added `bc` prerequisite check to latency script
+- Removed dead `$TIME_OUTPUT` variable from latency script
+- Added go/no-go evaluation with threshold checks to latency script
+- Added `--report` flag to latency script (appends results to feasibility report)
+- Fixed `echo` → `printf '%s\n'` in accuracy script for backslash safety
+- Added `--report` hint in verdict output
+- Added AIFF cleanup trap in audio generation script
+- Fixed Python 3.9 compat in API: `float | None` → `Optional[float]`, `bool()` cast for `_check_binary()`
+
+### Test Results
+- **Accuracy**: 57/61 (93%) — PASS (>= 85%)
+  - 4 misses: escitalopram (model misspelling), risperidone (drug substitution), schizoaffective (compound split), thyroid (TTS artifact)
+- **Latency (1min)**: 3.55x realtime — PASS (>= 3x)
+- **Latency (5min)**: 0.72x realtime — FAIL (< 3x, quadratic attention scaling)
+- **Memory**: 2.9GB peak — PASS (< 4GB)
+
+### Verdict: QUALIFIED GO
+Accuracy and memory pass. Latency passes for 1min segments, fails at 5min. Use `-S` segmented mode for longer recordings.
+
+## 2026-02-22: Phase 9 — 002-local-api-service
+
+### Integration Test
+- **Result**: 5/5 PASS
+- Tests: GET /health (200, status field, version field), POST /transcribe (WAV), POST /transcribe (reject .txt)
+
+### Fixes Applied During Phase 9
+- `api/models.py`: `float | None` → `Optional[float]` (Python 3.9 compat)
+- `api/transcribe.py`: Same Python 3.9 compat fix
+- `api/main.py`: Same + `bool()` cast for `_check_binary()` (Pydantic v2 strict mode)
+
+### Verdict: PASS
+All integration tests pass. API service is functional.

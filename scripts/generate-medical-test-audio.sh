@@ -81,11 +81,15 @@ for TEXT_FILE in "$AUDIO_DIR"/*.text; do
     # TTS → AIFF
     say -v "$VOICE" -o "$AIFF_FILE" < "$TEXT_FILE"
 
-    # AIFF → WAV (16kHz mono, s16le)
+    # AIFF → WAV (16kHz mono, s16le) — trap ensures AIFF cleanup even if ffmpeg fails
+    cleanup_aiff() { rm -f "$AIFF_FILE"; }
+    trap cleanup_aiff EXIT
+
     ffmpeg -y -i "$AIFF_FILE" -ar 16000 -ac 1 "$WAV_FILE" 2>/dev/null
 
-    # Clean up intermediate AIFF
+    # Clean up intermediate AIFF (normal path)
     rm -f "$AIFF_FILE"
+    trap - EXIT
 
     # Verify output
     if [[ -f "$WAV_FILE" ]] && [[ -s "$WAV_FILE" ]]; then

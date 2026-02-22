@@ -35,15 +35,15 @@
 | Category | Hit | Total | Accuracy |
 |----------|-----|-------|----------|
 | psychiatric-medications | 11 | 13 | 84% |
-| diagnoses | 10 | 12 | 83% |
+| diagnoses | 11 | 12 | 91% |
 | anatomical-terms | 11 | 11 | 100% |
 | vitals-measurements | 12 | 13 | 92% |
 | clinical-phrases | 12 | 12 | 100% |
-| **Overall** | **56** | **61** | **91%** |
+| **Overall** | **57** | **61** | **93%** |
 
 ### Missed Terms
 - **psychiatric-medications**: escitalopram, risperidone
-- **diagnoses**: post-traumatic stress disorder, schizoaffective disorder
+- **diagnoses**: schizoaffective disorder
 - **vitals-measurements**: thyroid stimulating hormone
 
 ### Transcription Samples
@@ -78,18 +78,54 @@ The patient presents with worsening depressive symptoms over the past three week
 ### Criteria
 | Criterion | Threshold | Actual | Status |
 |-----------|-----------|--------|--------|
-| Overall accuracy | >= 85% | 91% | PASS |
-| Min category accuracy | >= 70% | 83% (diagnoses) | PASS |
-| Realtime factor | >= 3x | See latency tests | -- |
-| Memory usage | < 4GB | See latency tests | -- |
+| Overall accuracy | >= 85% | 93% | PASS |
+| Min category accuracy | >= 70% | 84% (psychiatric-medications) | PASS |
+| Realtime factor (1min) | >= 3x | 3.55x | PASS |
+| Realtime factor (5min) | >= 3x | 0.72x | FAIL |
+| Memory usage | < 4GB | 2.9GB peak | PASS |
 
-### Verdict: **GO**
+### Verdict: **QUALIFIED GO**
 
-All criteria met. The Qwen3-ASR 0.6B model demonstrates sufficient medical terminology accuracy for further development.
+Accuracy criteria met (93% overall, all categories >= 70%). Latency PASS at 1min (3.55x realtime), FAIL at 5min (0.72x — slower than realtime due to quadratic attention scaling). Memory within budget at ~2.9GB. The model is viable for clinical audio segments up to ~1-2 minutes. Longer recordings require chunked/segmented processing (already supported via `-S` flag).
+
+## Methodology Notes — Miss Classification
+
+Of the 4 missed terms (57/61 = 93%), each has a distinct root cause:
+
+| Term | Expected | Transcribed As | Classification |
+|------|----------|----------------|----------------|
+| `escitalopram` | escitalopram | "esitaloprim" | Model misspelling — genuine model error |
+| `risperidone` | risperidone | "reserpine" | Drug substitution — medically significant model error (reserpine is a different drug) |
+| `schizoaffective disorder` | schizoaffective | "schizo affective" | Compound splitting — model outputs space-separated form; real miss but cosmetic |
+| `thyroid stimulating hormone` | thyroid stimulating hormone | "Fyreoid stimulating hormone" | TTS artifact — macOS `say` mispronounces "thyroid" as "Fyreoid"; not a model failure |
+
+**Adjusted accuracy**: If TTS artifacts are excluded, effective model accuracy is 58/61 (95%).
+True model errors: 3 (escitalopram, risperidone, schizoaffective — 2 genuine + 1 cosmetic).
+
+**Previously fixed**: `post traumatic stress disorder` was counted as a MISS in the initial run due to a hyphen in the test needle (`post-traumatic`). TTS drops hyphens, so grep could never match. This was a test-design bug, now corrected.
 
 ## Notes
 
 - TTS pronunciation may differ from natural clinical speech — results are a lower bound for real-world accuracy
 - No synonym mapping applied: model must produce the exact term (case-insensitive)
-- Latency and memory metrics require separate test: `bash tests/test-medical-latency.sh`
 - Model version: Qwen3-ASR-0.6B (see qwen3-asr-0.6b/ for weights)
+
+## Latency & Memory Results
+
+**Date**: 2026-02-22
+**Test Suite**: tests/test-medical-latency.sh
+
+### Per-Duration Results
+| Duration | Realtime Factor | Inference (ms) | Peak Memory (MB) | Words |
+|----------|----------------|----------------|-------------------|-------|
+| 1min | 3.55x | 16904 | 2898 | 129 |
+| 5min | 0.72x | 415475 | 2640 | 677 |
+
+### Latency Thresholds
+| Criterion | Threshold | Status |
+|-----------|-----------|--------|
+| 1min realtime (>= 3x) | 3.55x | PASS |
+| 1min memory (< 4096MB) | 2898MB | PASS |
+| 5min realtime (>= 3x) | 0.72x | FAIL |
+| 5min memory (< 4096MB) | 2640MB | PASS |
+

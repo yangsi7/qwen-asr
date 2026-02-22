@@ -4,6 +4,7 @@ import asyncio
 import re
 import time
 from pathlib import Path
+from typing import Optional
 
 from api import config
 
@@ -19,13 +20,13 @@ class TranscriptionError(Exception):
 class TranscriptionResult:
     __slots__ = ("text", "duration_seconds", "processing_time_ms")
 
-    def __init__(self, text: str, duration_seconds: float | None, processing_time_ms: float):
+    def __init__(self, text: str, duration_seconds: Optional[float], processing_time_ms: float):
         self.text = text
         self.duration_seconds = duration_seconds
         self.processing_time_ms = processing_time_ms
 
 
-def _parse_timing(stderr: str) -> float | None:
+def _parse_timing(stderr: str) -> Optional[float]:
     """Extract audio duration from stderr timing line."""
     # Pattern: "Audio: 13.0 s processed in 1.5 s (8.67x realtime)"
     match = re.search(r"Audio:\s+([\d.]+)\s+s\s+processed", stderr)

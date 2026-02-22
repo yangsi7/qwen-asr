@@ -10,7 +10,7 @@
 - **Notes**: Documents existing functionality. No further phases needed unless enhancements planned.
 
 ### Spec 002: Local API Service
-- **Status**: Implemented (20/20 tests passing)
+- **Status**: Phase 9 DONE (PASS — 5/5 integration)
 - **Spec**: specs/002-local-api-service/spec.md
 - **Plan**: specs/002-local-api-service/plan.md
 - **Tasks**: specs/002-local-api-service/tasks.md
@@ -20,20 +20,20 @@
 - **GATE 3**: PASS
 
 ### Spec 003: Medical Feasibility Testing
-- **Status**: Implemented
+- **Status**: Phase 9 DONE (QUALIFIED GO)
 - **Spec**: specs/003-medical-feasibility-testing/spec.md
 - **Plan**: specs/003-medical-feasibility-testing/plan.md
-- **Tasks**: specs/003-medical-feasibility-testing/tasks.md
+- **Tasks**: specs/003-medical-feasibility-testing/tasks.md (17/17 complete)
 - **Audit**: specs/003-medical-feasibility-testing/audit-report.md (PASS)
 - **GATE 1**: PASS
 - **GATE 2**: SKIP (complexity 0-2)
 - **GATE 3**: PASS
-- **Next**: Phase 9 — run tests with real binary, generate feasibility report
+- **Report**: docs/feasibility/002-medical-terminology-test.md
 
 ## Phase Tracking
 
 | Feature | Phase 3 (Spec) | Phase 5 (Plan) | Phase 6 (Tasks) | Phase 7 (Audit) | Phase 8 (Impl) | Phase 9 (Final) |
 |---------|----------------|----------------|------------------|------------------|-----------------|------------------|
 | 001 | DONE | -- | -- | -- | -- | -- |
-| 002 | DONE | DONE | DONE | DONE (PASS) | DONE | -- |
-| 003 | DONE | DONE | DONE | DONE (PASS) | DONE | -- |
+| 002 | DONE | DONE | DONE | DONE (PASS) | DONE | DONE (PASS) |
+| 003 | DONE | DONE | DONE | DONE (PASS) | DONE | DONE (QUALIFIED GO) |

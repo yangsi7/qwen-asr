@@ -1,4 +1,4 @@
-phase: implementation
+phase: done
 status: complete
 created: 2026-02-22
 spec: specs/002-local-api-service/spec.md
@@ -8,4 +8,6 @@ audit: specs/002-local-api-service/audit-report.md (PASS)
 gate1: PASS (2026-02-22)
 gate2: SKIP (complexity 0-2, validators N/A)
 gate3: PASS (2026-02-22)
-tests: 20/20 passing
+tests: 20/20 unit passing, 5/5 integration passing
+phase9: DONE (2026-02-22) — PASS (5/5 integration tests)
+notes: Fixed Python 3.9 compat (Optional[] syntax, bool cast). All endpoints verified.

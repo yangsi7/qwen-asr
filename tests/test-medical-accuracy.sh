@@ -139,7 +139,7 @@ for cat in "${CATEGORIES[@]}"; do
         [[ -z "$term" ]] && continue
         CAT_TOTAL=$((CAT_TOTAL + 1))
 
-        if echo "$TRANSCRIPT" | grep -iqF "$term"; then
+        if printf '%s\n' "$TRANSCRIPT" | grep -iqF "$term"; then
             echo "    HIT:  $term"
             CAT_HIT=$((CAT_HIT + 1))
         else
@@ -220,9 +220,11 @@ fi
 if [[ "$GO" -eq 1 ]]; then
     echo ""
     echo "  VERDICT: GO"
+    echo "  (Use --report to save results to docs/feasibility/002-medical-terminology-test.md)"
 else
     echo ""
     echo "  VERDICT: NO-GO (see failed criteria above)"
+    echo "  (Use --report to save results to docs/feasibility/002-medical-terminology-test.md)"
 fi
 
 # Generate report if requested

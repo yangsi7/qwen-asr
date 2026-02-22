@@ -11,7 +11,13 @@ AUDIO_DIR="$SCRIPT_DIR/medical-audio"
 TIME_BIN="/usr/bin/time"
 
 FULL_MODE=0
+GENERATE_REPORT=0
 DURATIONS=(60 300)  # 1min, 5min in seconds
+REPORT_FILE="$PROJECT_DIR/docs/feasibility/002-medical-terminology-test.md"
+
+# Thresholds for go/no-go
+REALTIME_THRESHOLD=3    # Must achieve >= 3x realtime
+MEMORY_THRESHOLD_MB=4096  # Must stay below 4GB
 
 usage() {
     echo "Usage: $(basename "$0") [options]"
@@ -22,6 +28,7 @@ usage() {
     echo "Options:"
     echo "  -h, --help     Show this help text"
     echo "  --full         Also test 15min and 30min durations (slow — real-time TTS)"
+    echo "  --report       Append latency results to feasibility report"
     exit 0
 }
 
@@ -29,6 +36,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) usage ;;
         --full) FULL_MODE=1; shift ;;
+        --report) GENERATE_REPORT=1; shift ;;
         *) echo "Error: Unknown option: $1" >&2; exit 1 ;;
     esac
 done
@@ -70,6 +78,13 @@ if [[ ! -x "$TIME_BIN" ]]; then
     PREREQ_FAIL=1
 else
     echo "  PASS: /usr/bin/time available"
+fi
+
+if ! command -v bc &>/dev/null; then
+    echo "  FAIL: bc not found (required for float math)"
+    PREREQ_FAIL=1
+else
+    echo "  PASS: bc available"
 fi
 
 if ! command -v say &>/dev/null; then
@@ -157,6 +172,13 @@ generate_long_audio() {
 echo ""
 echo "[Latency Tests]"
 
+# Collect results for go/no-go and report
+declare -a RESULT_LABELS=()
+declare -a RESULT_REALTIME=()
+declare -a RESULT_INFERENCE_MS=()
+declare -a RESULT_MEMORY_MB=()
+declare -a RESULT_WORDS=()
+
 for dur_secs in "${DURATIONS[@]}"; do
     dur_label="${dur_secs}s"
     if [[ "$dur_secs" -ge 60 ]]; then
@@ -173,6 +195,11 @@ for dur_secs in "${DURATIONS[@]}"; do
 
     if [[ ! -f "$LONG_WAV" ]] || [[ ! -s "$LONG_WAV" ]]; then
         echo "    FAIL: Could not generate ${dur_label} audio"
+        RESULT_LABELS+=("$dur_label")
+        RESULT_REALTIME+=("N/A")
+        RESULT_INFERENCE_MS+=("N/A")
+        RESULT_MEMORY_MB+=("N/A")
+        RESULT_WORDS+=("0")
         continue
     fi
 
@@ -181,7 +208,6 @@ for dur_secs in "${DURATIONS[@]}"; do
 
     # Transcribe with timing
     echo "    Transcribing..."
-    TIME_OUTPUT=$(mktemp)
     TRANSCRIPT_OUTPUT=$(mktemp)
     STDERR_OUTPUT=$(mktemp)
 
@@ -210,9 +236,118 @@ for dur_secs in "${DURATIONS[@]}"; do
     echo "      Inference time:    ${INFERENCE_MS}ms"
     echo "      Peak memory:       ${PEAK_MEM_MB}MB"
 
+    # Collect results
+    RESULT_LABELS+=("$dur_label")
+    RESULT_REALTIME+=("$REALTIME_FACTOR")
+    RESULT_INFERENCE_MS+=("$INFERENCE_MS")
+    RESULT_MEMORY_MB+=("$PEAK_MEM_MB")
+    RESULT_WORDS+=("$WORD_COUNT")
+
     # Cleanup
-    rm -f "$LONG_WAV" "$TIME_OUTPUT" "$TRANSCRIPT_OUTPUT" "$STDERR_OUTPUT"
+    rm -f "$LONG_WAV" "$TRANSCRIPT_OUTPUT" "$STDERR_OUTPUT"
 done
+
+# Go/No-Go evaluation
+echo ""
+echo "=== Go/No-Go Assessment ==="
+
+LATENCY_GO=1
+for i in "${!RESULT_LABELS[@]}"; do
+    rt="${RESULT_REALTIME[$i]}"
+    mem="${RESULT_MEMORY_MB[$i]}"
+    label="${RESULT_LABELS[$i]}"
+
+    # Realtime factor check
+    if [[ "$rt" == "N/A" ]]; then
+        echo "  FAIL: $label — realtime factor unavailable"
+        LATENCY_GO=0
+    elif (( $(echo "$rt >= $REALTIME_THRESHOLD" | bc 2>/dev/null || echo "0") )); then
+        echo "  PASS: $label — ${rt}x realtime (>= ${REALTIME_THRESHOLD}x)"
+    else
+        echo "  FAIL: $label — ${rt}x realtime (< ${REALTIME_THRESHOLD}x)"
+        LATENCY_GO=0
+    fi
+
+    # Memory check
+    if [[ "$mem" == "N/A" ]]; then
+        echo "  FAIL: $label — memory unavailable"
+        LATENCY_GO=0
+    elif [[ "$mem" -lt "$MEMORY_THRESHOLD_MB" ]]; then
+        echo "  PASS: $label — ${mem}MB memory (< ${MEMORY_THRESHOLD_MB}MB)"
+    else
+        echo "  FAIL: $label — ${mem}MB memory (>= ${MEMORY_THRESHOLD_MB}MB)"
+        LATENCY_GO=0
+    fi
+done
+
+if [[ "$LATENCY_GO" -eq 1 ]]; then
+    echo ""
+    echo "  VERDICT: PASS — all durations meet latency and memory thresholds"
+else
+    echo ""
+    echo "  VERDICT: FAIL — one or more durations exceed thresholds"
+fi
+echo "  (Use --report to append results to docs/feasibility/002-medical-terminology-test.md)"
+
+# Generate report section if requested
+if [[ "$GENERATE_REPORT" -eq 1 ]]; then
+    echo ""
+    echo "=== Appending Latency Results to Report ==="
+
+    if [[ ! -f "$REPORT_FILE" ]]; then
+        echo "  WARN: Report file not found at $REPORT_FILE"
+        echo "  Run accuracy test with --report first: bash tests/test-medical-accuracy.sh --report"
+    else
+        # Remove trailing notes section so we can append latency before it
+        # Append latency section to report
+        cat >> "$REPORT_FILE" << LATENCY_EOF
+
+## Latency & Memory Results
+
+**Date**: $(date +%Y-%m-%d)
+**Test Suite**: tests/test-medical-latency.sh
+
+### Per-Duration Results
+| Duration | Realtime Factor | Inference (ms) | Peak Memory (MB) | Words |
+|----------|----------------|----------------|-------------------|-------|
+LATENCY_EOF
+
+        for i in "${!RESULT_LABELS[@]}"; do
+            echo "| ${RESULT_LABELS[$i]} | ${RESULT_REALTIME[$i]}x | ${RESULT_INFERENCE_MS[$i]} | ${RESULT_MEMORY_MB[$i]} | ${RESULT_WORDS[$i]} |" >> "$REPORT_FILE"
+        done
+
+        cat >> "$REPORT_FILE" << LATENCY_EOF2
+
+### Latency Thresholds
+| Criterion | Threshold | Status |
+|-----------|-----------|--------|
+LATENCY_EOF2
+
+        for i in "${!RESULT_LABELS[@]}"; do
+            rt="${RESULT_REALTIME[$i]}"
+            mem="${RESULT_MEMORY_MB[$i]}"
+            label="${RESULT_LABELS[$i]}"
+
+            if [[ "$rt" != "N/A" ]] && (( $(echo "$rt >= $REALTIME_THRESHOLD" | bc 2>/dev/null || echo "0") )); then
+                rt_status="PASS"
+            else
+                rt_status="FAIL"
+            fi
+
+            if [[ "$mem" != "N/A" ]] && [[ "$mem" -lt "$MEMORY_THRESHOLD_MB" ]]; then
+                mem_status="PASS"
+            else
+                mem_status="FAIL"
+            fi
+
+            echo "| $label realtime (>= ${REALTIME_THRESHOLD}x) | ${rt}x | $rt_status |" >> "$REPORT_FILE"
+            echo "| $label memory (< ${MEMORY_THRESHOLD_MB}MB) | ${mem}MB | $mem_status |" >> "$REPORT_FILE"
+        done
+
+        echo "" >> "$REPORT_FILE"
+        echo "  Report appended to: $REPORT_FILE"
+    fi
+fi
 
 echo ""
 echo "=== Latency Benchmark Complete ==="
