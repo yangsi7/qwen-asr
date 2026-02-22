@@ -6,9 +6,9 @@
 - **Action**: Mark as complete, or proceed to Phase 5 (`/plan`) only if enhancements are planned.
 
 ## Feature 002: Local API Service
-- **Status**: Planned (GATE 1 PASS, Phase 5 complete)
-- **Next**: Phase 6 — `/tasks` to generate task breakdown from plan.md
-- **Action**: Run `/tasks specs/002-local-api-service/plan.md`
+- **Status**: Implemented (20/20 tests passing, GATE 3 PASS)
+- **Next**: Phase 9 — finalize (integration test with real binary, then done)
+- **Action**: Run `bash tests/test-api.sh` for integration test, then merge/tag
 
 ## Feature 003: Medical Feasibility Testing
 - **Status**: Specified (GATE 1 PASS)

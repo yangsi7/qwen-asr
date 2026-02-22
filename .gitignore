@@ -25,3 +25,7 @@ qwen3-asr-1.7b/
 # Temp audio
 *.wav
 *.env
+
+# API service runtime
+.api-tmp/
+.api.pid

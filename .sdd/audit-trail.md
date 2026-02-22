@@ -45,3 +45,27 @@ Specs were written by general-purpose agents during the session rather than thro
 
 ### Next Step
 Phase 6 (`/tasks`) to generate task breakdown from plan.md
+
+## 2026-02-22: Phase 6-7 Tasks + Audit — 002-local-api-service
+
+- `specs/002-local-api-service/tasks.md` — 20 tasks with TDD steps, AC mapping, dependency graph
+- `specs/002-local-api-service/audit-report.md` — PASS (7/7 constitution, 100% FR coverage, 0 blockers)
+- GATE 3: PASS
+
+## 2026-02-22: Phase 8 Implementation — 002-local-api-service
+
+### Files Created
+- `api/__init__.py` — package init
+- `api/config.py` — settings (host, port, temp dir, queue size, max upload, timeout)
+- `api/models.py` — Pydantic response models (TranscriptionResponse, HealthResponse, ErrorResponse)
+- `api/transcribe.py` — async subprocess wrapper for scripts/transcribe.sh
+- `api/main.py` — FastAPI app (POST /transcribe, GET /health, semaphore, temp cleanup)
+- `requirements-api.txt` — FastAPI + uvicorn + python-multipart
+- `scripts/start-api.sh` — lifecycle script with prerequisite validation
+- `scripts/stop-api.sh` — graceful shutdown with PID management
+- `tests/test_api.py` — 20 unit tests (config, models, health, transcribe, cleanup)
+- `tests/test-api.sh` — integration test script
+
+### Test Results
+- 20/20 unit tests passing (0.30s)
+- All error codes covered: 200, 400, 413, 429, 500, 503
