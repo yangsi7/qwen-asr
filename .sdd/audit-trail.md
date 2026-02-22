@@ -29,3 +29,19 @@ All 3 feature specs written and committed at `ecea144`.
 ### Process Note
 
 Specs were written by general-purpose agents during the session rather than through the SDD interview workflow. User provided all context directly. Interview artifacts (`.sdd/features/*/interview-round-*.md`) were not generated because no structured interviews occurred. The specs themselves are complete and pass GATE 1.
+
+## 2026-02-22: Phase 5 Planning — 002-local-api-service
+
+### Artifacts Created
+- `specs/002-local-api-service/plan.md` — 20 tasks across 4 user stories + cross-cutting
+- `specs/002-local-api-service/research.md` — FastAPI patterns, subprocess strategy, concurrency model
+
+### Key Decisions
+- **Subprocess via transcribe.sh** (not direct binary) — reuses format conversion and validation logic
+- **asyncio.Semaphore(1)** for sequential processing — prevents OOM from concurrent binary invocations
+- **asyncio.create_subprocess_exec** — non-blocking subprocess to avoid blocking the event loop
+- **requirements-api.txt** (not requirements.txt) — isolates API deps from core engine
+- **No data-model.md** — stateless API, no persistent storage
+
+### Next Step
+Phase 6 (`/tasks`) to generate task breakdown from plan.md

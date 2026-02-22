@@ -6,9 +6,9 @@
 - **Action**: Mark as complete, or proceed to Phase 5 (`/plan`) only if enhancements are planned.
 
 ## Feature 002: Local API Service
-- **Status**: Specified (GATE 1 PASS)
-- **Next**: Phase 5 — `/plan` to create `specs/002-local-api-service/plan.md`
-- **Action**: Run `/plan specs/002-local-api-service/spec.md`
+- **Status**: Planned (GATE 1 PASS, Phase 5 complete)
+- **Next**: Phase 6 — `/tasks` to generate task breakdown from plan.md
+- **Action**: Run `/tasks specs/002-local-api-service/plan.md`
 
 ## Feature 003: Medical Feasibility Testing
 - **Status**: Specified (GATE 1 PASS)
